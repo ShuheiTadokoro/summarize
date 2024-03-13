@@ -20,18 +20,18 @@ import streamlit as st
 import openai
 
 # OpenAI APIキーの設定
-openai.api_key = "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"
+#openai.api_key = "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"
 
 # 以下の関数定義もそのまま使ってください
-def correct_text(text):
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "user", "content": text}
-        ]
-    )
-    corrected_text = response.choices[0]["message"]["content"].strip()
-    return corrected_text
+#def correct_text(text):
+#    response = openai.ChatCompletion.create(
+#        model="gpt-3.5-turbo",
+#        messages=[
+#           {"role": "user", "content": text}
+#        ]
+#    )
+#    corrected_text = response.choices[0]["message"]["content"].strip()
+#    return corrected_text
 
 
 def summarize_text(text, summarizer_type='LSA', sentences_count=3):
@@ -53,7 +53,7 @@ def summarize_text(text, summarizer_type='LSA', sentences_count=3):
     return summarized_text
 
 # 以下はそのまま使ってください
-st.title("Text Correction and Summarization")
+st.title("Text Summarization")
 
 text_input = st.text_area("Enter your text here:")
 
@@ -67,12 +67,12 @@ st.write(
 
 option = st.radio("Choose an option:", ("Correction", "Summarization"))
 
-if option == "Correction":
-    if st.button("Correct Text"):
-        corrected_text = correct_text(text_input)
-        st.text_area("Corrected Text:", value=corrected_text, height=300)
+#if option == "Correction":
+#    if st.button("Correct Text"):
+#        corrected_text = correct_text(text_input)
+#        st.text_area("Corrected Text:", value=corrected_text, height=300)
 
-elif option == "Summarization":
+if option == "Summarization":
     summarizer_type = st.selectbox("Choose summarizer type:",
                                    ("LSA", "Luhn", "Edmundson", "LexRank", "TextRank"))
 
