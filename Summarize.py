@@ -1,83 +1,95 @@
-import os
-
-if "PYTHONPATH" in os.environ:
-    print(os.environ["PYTHONPATH"])
-else:
-    print("PYTHONPATH環境変数が存在しません。")
-    os.environ["PYTHONPATH"] = "."
-
-import sys
-import subprocess  
-import site
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.lsa import LsaSummarizer
-from sumy.summarizers.luhn import LuhnSummarizer
-from sumy.summarizers.edmundson import EdmundsonSummarizer
-from sumy.summarizers.lex_rank import LexRankSummarizer
-from sumy.summarizers.text_rank import TextRankSummarizer
 import streamlit as st
 import openai
 
-# OpenAI APIキーの設定
-#openai.api_key = ""
+# StreamlitでAPIキーを入力
+api_key = st.text_input("OpenAI APIキーを入力してください")
 
-# 以下の関数定義もそのまま使ってください
-#def correct_text(text):
-#    response = openai.ChatCompletion.create(
-#        model="gpt-3.5-turbo",
-#        messages=[
-#           {"role": "user", "content": text}
-#        ]
-#    )
-#    corrected_text = response.choices[0]["message"]["content"].strip()
-#    return corrected_text
+# OpenAI API認証情報の設定
+openai.api_key = api_key
+# 文章を要約する関数
+def summarize_text(text, max_tokens):
+    prompt = f"次の文章を{max_tokens}の文字数で要約してください\n{text}"
+    # パラメータの定義
+    parameters = {
+        'engine': 'gpt-3.5-turbo',
+        'max_tokens': 400,
+        'stop': None,
+    }
 
 
-def summarize_text(text, summarizer_type='LSA', sentences_count=3):
-    summarizer = None
-    if summarizer_type == 'LSA':
-        summarizer = LsaSummarizer()
-    elif summarizer_type == 'Luhn':
-        summarizer = LuhnSummarizer()
-    elif summarizer_type == 'Edmundson':
-        summarizer = EdmundsonSummarizer()
-    elif summarizer_type == 'LexRank':
-        summarizer = LexRankSummarizer()
-    elif summarizer_type == 'TextRank':
-        summarizer = TextRankSummarizer()
+    # 温度の定義
+    temperatures = [0 , 0.8]
 
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summary = summarizer(parser.document, sentences_count)
-    summarized_text = ' '.join([str(sentence) for sentence in summary])
-    return summarized_text
+    # ユーザーからの入力を取得
+    question = prompt
 
-# 以下はそのまま使ってください
-st.title("Text Summarization")
+    # 温度パラメータの更新
+    parameters['temperature'] = 0.5
 
-text_input = st.text_area("Enter your text here:")
+    # APIを呼び出す
+    response = openai.ChatCompletion.create(
+        model=parameters['engine'],
+        messages=[
+            {"role": "system", "content": "あなたは助けになるアシスタントです。"},
+            {"role": "user", "content": question}
+        ],
+        max_tokens=parameters['max_tokens'],
+        temperature=parameters['temperature'],
+        stop=parameters['stop'],
+    )
+    summarized_text=response['choices'][0]['message']['content']
+    st.write(f"{summarized_text}")
+    
+# 文章を添削する関数
+def proofread_text(text):
+    prompt = f"次の文章には誤字脱字、文法ミスがあるので正しい文章に直してください\n{text}"
+    # パラメータの定義
+    parameters = {
+        'engine': 'gpt-3.5-turbo',
+        'max_tokens': 400,
+        'stop': None,
+    }
 
-st.write(
-    """
-    **Correction Models:**
 
-    The correction model used here is based on ChatGPT, which is a variant of the GPT model fine-tuned for text generation tasks. It attempts to improve the coherence and correctness of the input text.
-    """
-)
+    # 温度の定義
+    temperatures = [0 , 0.8]
 
-option = st.radio("Choose an option:",("Summarization","Correction(Currently unavailable)"))
+    # ユーザーからの入力を取得
+    question = prompt
 
-#if option == "Correction":
-#    if st.button("Correct Text"):
-#        corrected_text = correct_text(text_input)
-#        st.text_area("Corrected Text:", value=corrected_text, height=300)
+    # 温度パラメータの更新
+    parameters['temperature'] = 0.5
 
-if option == "Summarization":
-    summarizer_type = st.selectbox("Choose summarizer type:",
-                                   ("LSA", "Luhn", "Edmundson", "LexRank", "TextRank"))
+    # APIを呼び出す
+    response = openai.ChatCompletion.create(
+        model=parameters['engine'],
+        messages=[
+            {"role": "system", "content": "あなたは助けになるアシスタントです。"},
+            {"role": "user", "content": question}
+        ],
+        max_tokens=parameters['max_tokens'],
+        temperature=parameters['temperature'],
+        stop=parameters['stop'],
+    )
+    proofread_result=response['choices'][0]['message']['content']
+    st.write(f"{proofread_result}")
 
-    sentences_count = st.slider("Select the number of sentences for summary:", min_value=1, max_value=10, value=3)
+# メイン関数
+def main():
+    st.title("文章要約・添削アプリ")
+    task = st.radio("以下のタスクを選択してください:", ("要約", "添削"))
 
-    if st.button("Summarize"):
-        summarized_text = summarize_text(text_input, summarizer_type, sentences_count)
-        st.text_area("Summarized Text:", value=summarized_text, height=300)
+    if task == "要約":
+        text = st.text_area("要約する文章を入力してください:")
+        max_tokens = st.number_input("要約する文字数を入力してください:", min_value=1, max_value=400)
+        if st.button("要約する"):
+            summarized_text = summarize_text(text, max_tokens)
+            #st.write("要約された文章:", summarized_text)
+    elif task == "添削":
+        text = st.text_area("添削する文章を入力してください:")
+        if st.button("添削する"):
+            proofread_result = proofread_text(text)
+            #st.write("添削された文章:", proofread_result)
+
+if __name__ == "__main__":
+    main()
