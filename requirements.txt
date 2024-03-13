@@ -3,3 +3,8 @@ numpy
 pandas
 pydeck
 streamlit
+sumy
+openai
+subprocess 
+sys
+os
