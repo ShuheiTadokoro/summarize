@@ -4,6 +4,4 @@ pandas
 pydeck
 streamlit
 sumy
-subprocess 
-sys
-os
+
