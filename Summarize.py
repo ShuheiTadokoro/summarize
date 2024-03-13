@@ -20,7 +20,7 @@ import streamlit as st
 import openai
 
 # OpenAI APIキーの設定
-#openai.api_key = "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"
+#openai.api_key = ""
 
 # 以下の関数定義もそのまま使ってください
 #def correct_text(text):
@@ -65,7 +65,7 @@ st.write(
     """
 )
 
-option = st.radio("Choose an option:", ("Correction", "Summarization"))
+option = st.radio("Choose an option:",("Summarization","Correction(Currently unavailable)"))
 
 #if option == "Correction":
 #    if st.button("Correct Text"):
